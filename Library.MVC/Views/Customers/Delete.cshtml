@@ -1,10 +1,10 @@
-@model ProductDeleteViewModel
+@model CustomerDeleteViewModel
 
 @{
     ViewData["Title"] = $"Delete — {Model.Name}";
 }
 
-<h1>Delete Product</h1>
+<h1>Delete Customer</h1>
 
 @if (Model.CanDelete)
 {
@@ -15,22 +15,19 @@
 else
 {
     <div class="alert alert-warning">
-        <strong>@Model.Name</strong> is referenced by @Model.UsageCount invoice line(s) and cannot be deleted.
-        Remove all invoice lines that use this product first.
+        <strong>@Model.Name</strong> has @Model.InvoiceCount invoice(s) and cannot be deleted.
+        Please delete or reassign all invoices first.
     </div>
 }
 
 <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
 <dl class="row mb-4">
-    <dt class="col-sm-3">Name</dt>
-    <dd class="col-sm-9">@Model.Name</dd>
+    <dt class="col-sm-2">Name</dt>
+    <dd class="col-sm-10">@Model.Name</dd>
 
-    <dt class="col-sm-3">Unit Price</dt>
-    <dd class="col-sm-9">£@Model.UnitPrice.ToString("N2")</dd>
-
-    <dt class="col-sm-3">Used in Invoice Lines</dt>
-    <dd class="col-sm-9">@Model.UsageCount</dd>
+    <dt class="col-sm-2">Invoices</dt>
+    <dd class="col-sm-10">@Model.InvoiceCount</dd>
 </dl>
 
 <form asp-action="Delete">

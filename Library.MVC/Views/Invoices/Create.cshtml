@@ -1,0 +1,193 @@
+@model InvoiceCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Invoice";
+}
+
+<h1>Create Invoice</h1>
+
+<div class="row">
+    <div class="col-lg-9">
+        <form asp-action="Create" id="invoice-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label asp-for="InvoiceDate" class="form-label"></label>
+                    <input asp-for="InvoiceDate" type="date" class="form-control" asp-format="{0:yyyy-MM-dd}" />
+                    <span asp-validation-for="InvoiceDate" class="text-danger"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="CustomerId" class="form-label"></label>
+                    <select asp-for="CustomerId" asp-items="Model.CustomerOptions" class="form-select">
+                        <option value="">-- Select Customer --</option>
+                    </select>
+                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <h5 class="mt-4 mb-2">Invoice Lines</h5>
+            <div id="lines-error" class="text-danger mb-2"></div>
+
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Product</th>
+                        <th style="width:110px">Qty</th>
+                        <th style="width:140px">Unit Price (£)</th>
+                        <th style="width:120px" class="text-end">Line Total</th>
+                        <th style="width:80px"></th>
+                    </tr>
+                </thead>
+                <tbody id="lines-container"></tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <td colspan="3" class="text-end fw-semibold">Grand Total:</td>
+                        <td class="text-end fw-bold" id="grand-total">£0.00</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <button type="button" class="btn btn-outline-secondary mb-4" id="add-line">+ Add Line</button>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Create Invoice</button>
+                <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        const products = @Html.Raw(Model.ProductsJson);
+        const existingLines = @Html.Raw(Model.LinesJson);
+        let lineCount = 0;
+
+        function esc(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function buildOptions(selectedId) {
+            let html = '<option value="">-- Select Product --</option>';
+            products.forEach(p => {
+                const sel = p.Id === selectedId ? ' selected' : '';
+                html += `<option value="${p.Id}"${sel}>${esc(p.Name)} — £${Number(p.UnitPrice).toFixed(2)}</option>`;
+            });
+            return html;
+        }
+
+        function buildRow(index, productId, qty, price) {
+            const total = (qty * price).toFixed(2);
+            return `
+            <tr>
+                <td>
+                    <select name="Lines[${index}].ProductId" class="form-select product-select" required>
+                        ${buildOptions(productId)}
+                    </select>
+                </td>
+                <td>
+                    <input name="Lines[${index}].Quantity" type="number" class="form-control qty-input"
+                           value="${qty}" min="1" required />
+                </td>
+                <td>
+                    <input name="Lines[${index}].UnitPrice" type="number" class="form-control price-input"
+                           step="0.01" value="${Number(price).toFixed(2)}" min="0.01" required />
+                </td>
+                <td class="line-total text-end">£${total}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-line">Remove</button>
+                </td>
+            </tr>`;
+        }
+
+        function reindex() {
+            document.querySelectorAll('#lines-container tr').forEach((row, i) => {
+                row.querySelectorAll('[name]').forEach(el => {
+                    el.name = el.name.replace(/Lines\[\d+\]/, `Lines[${i}]`);
+                });
+            });
+            lineCount = document.querySelectorAll('#lines-container tr').length;
+        }
+
+        function rowTotal(row) {
+            const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            row.querySelector('.line-total').textContent = `£${(qty * price).toFixed(2)}`;
+        }
+
+        function grandTotal() {
+            let total = 0;
+            document.querySelectorAll('#lines-container tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                total += qty * price;
+            });
+            document.getElementById('grand-total').textContent = `£${total.toFixed(2)}`;
+        }
+
+        const container = document.getElementById('lines-container');
+
+        container.addEventListener('change', e => {
+            const row = e.target.closest('tr');
+            if (!row) return;
+            if (e.target.classList.contains('product-select')) {
+                const product = products.find(p => p.Id === parseInt(e.target.value));
+                if (product) row.querySelector('.price-input').value = Number(product.UnitPrice).toFixed(2);
+            }
+            rowTotal(row);
+            grandTotal();
+        });
+
+        container.addEventListener('input', e => {
+            const row = e.target.closest('tr');
+            if (row && (e.target.classList.contains('qty-input') || e.target.classList.contains('price-input'))) {
+                rowTotal(row);
+                grandTotal();
+            }
+        });
+
+        container.addEventListener('click', e => {
+            if (e.target.classList.contains('remove-line')) {
+                e.target.closest('tr').remove();
+                reindex();
+                grandTotal();
+            }
+        });
+
+        document.getElementById('add-line').addEventListener('click', () => {
+            container.insertAdjacentHTML('beforeend', buildRow(lineCount, 0, 1, 0));
+            lineCount++;
+            grandTotal();
+        });
+
+        document.getElementById('invoice-form').addEventListener('submit', e => {
+            const errEl = document.getElementById('lines-error');
+            if (document.querySelectorAll('#lines-container tr').length === 0) {
+                e.preventDefault();
+                errEl.textContent = 'At least one invoice line is required.';
+            } else {
+                errEl.textContent = '';
+            }
+        });
+
+        // Initialise rows
+        existingLines.forEach((l, i) => {
+            container.insertAdjacentHTML('beforeend', buildRow(i, l.ProductId, l.Quantity, Number(l.UnitPrice)));
+        });
+        lineCount = existingLines.length;
+
+        if (lineCount === 0) {
+            container.insertAdjacentHTML('beforeend', buildRow(0, 0, 1, 0));
+            lineCount = 1;
+        }
+
+        grandTotal();
+    </script>
+}

@@ -1,0 +1,54 @@
+@model InvoiceDetailsViewModel
+
+@{
+    ViewData["Title"] = $"Delete Invoice #{Model.Id}";
+}
+
+<h1>Delete Invoice</h1>
+
+<div class="alert alert-danger">
+    Are you sure you want to permanently delete Invoice <strong>#@Model.Id</strong>?
+    This will also remove all @Model.Lines.Count line(s) associated with it.
+</div>
+
+<dl class="row mb-3">
+    <dt class="col-sm-2">Invoice #</dt>
+    <dd class="col-sm-10">@Model.Id</dd>
+
+    <dt class="col-sm-2">Date</dt>
+    <dd class="col-sm-10">@Model.InvoiceDate.ToString("dd MMM yyyy")</dd>
+
+    <dt class="col-sm-2">Customer</dt>
+    <dd class="col-sm-10">@Model.CustomerName</dd>
+
+    <dt class="col-sm-2">Total</dt>
+    <dd class="col-sm-10">£@Model.Total.ToString("N2")</dd>
+</dl>
+
+<table class="table table-sm table-bordered mb-4">
+    <thead class="table-light">
+        <tr>
+            <th>Product</th>
+            <th class="text-center" style="width:110px">Qty</th>
+            <th class="text-end" style="width:140px">Unit Price</th>
+            <th class="text-end" style="width:130px">Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var line in Model.Lines)
+        {
+            <tr>
+                <td>@line.ProductName</td>
+                <td class="text-center">@line.Quantity</td>
+                <td class="text-end">£@line.UnitPrice.ToString("N2")</td>
+                <td class="text-end">£@line.LineTotal.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<form asp-action="Delete">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary ms-2">Cancel</a>
+</form>

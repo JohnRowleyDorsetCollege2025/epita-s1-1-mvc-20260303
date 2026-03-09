@@ -1,0 +1,47 @@
+@model IEnumerable<InvoiceSummaryViewModel>
+
+@{
+    ViewData["Title"] = "Invoices";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Invoices</h1>
+    <a asp-action="Create" class="btn btn-primary">+ New Invoice</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No invoices yet. <a asp-action="Create">Create one</a>.</div>
+}
+else
+{
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Date</th>
+                <th>Customer</th>
+                <th class="text-center">Lines</th>
+                <th class="text-end">Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inv in Model)
+            {
+                <tr>
+                    <td>@inv.Id</td>
+                    <td>@inv.InvoiceDate.ToString("dd MMM yyyy")</td>
+                    <td>@inv.CustomerName</td>
+                    <td class="text-center">@inv.LineCount</td>
+                    <td class="text-end">£@inv.Total.ToString("N2")</td>
+                    <td class="text-end">
+                        <a asp-action="Details" asp-route-id="@inv.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                        <a asp-action="Edit" asp-route-id="@inv.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@inv.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

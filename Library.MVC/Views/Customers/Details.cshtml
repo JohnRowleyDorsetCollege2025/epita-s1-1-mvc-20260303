@@ -1,4 +1,4 @@
-@model ProductSummaryViewModel
+@model CustomerSummaryViewModel
 
 @{
     ViewData["Title"] = Model.Name;
@@ -14,24 +14,23 @@
 </div>
 
 <dl class="row">
-    <dt class="col-sm-3">Product ID</dt>
-    <dd class="col-sm-9">@Model.Id</dd>
+    <dt class="col-sm-2">Customer ID</dt>
+    <dd class="col-sm-10">@Model.Id</dd>
 
-    <dt class="col-sm-3">Name</dt>
-    <dd class="col-sm-9">@Model.Name</dd>
+    <dt class="col-sm-2">Name</dt>
+    <dd class="col-sm-10">@Model.Name</dd>
 
-    <dt class="col-sm-3">Unit Price</dt>
-    <dd class="col-sm-9">£@Model.UnitPrice.ToString("N2")</dd>
-
-    <dt class="col-sm-3">Used in Invoice Lines</dt>
-    <dd class="col-sm-9">
-        @if (Model.UsageCount > 0)
+    <dt class="col-sm-2">Invoices</dt>
+    <dd class="col-sm-10">
+        @if (Model.InvoiceCount > 0)
         {
-            <span>@Model.UsageCount time(s)</span>
+            <a asp-action="Invoices" asp-route-id="@Model.Id">
+                View @Model.InvoiceCount invoice(s)
+            </a>
         }
         else
         {
-            <span class="text-muted">Not used in any invoices</span>
+            <span class="text-muted">No invoices yet</span>
         }
     </dd>
 </dl>

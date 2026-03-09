@@ -1,10 +1,10 @@
-@model ProductFormViewModel
+@model CustomerFormViewModel
 
 @{
     ViewData["Title"] = $"Edit — {Model.Name}";
 }
 
-<h1>Edit Product</h1>
+<h1>Edit Customer</h1>
 
 <div class="row">
     <div class="col-md-5">
@@ -16,19 +16,6 @@
                 <label asp-for="Name" class="form-label"></label>
                 <input asp-for="Name" class="form-control" autofocus />
                 <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="UnitPrice" class="form-label"></label>
-                <div class="input-group">
-                    <span class="input-group-text">£</span>
-                    <input asp-for="UnitPrice" type="number" step="0.01" min="0.01" class="form-control" />
-                </div>
-                <span asp-validation-for="UnitPrice" class="text-danger"></span>
-                <div class="form-text text-muted">
-                    Changing the price here only affects new invoices. Existing invoice lines store their
-                    own price snapshot and will not be updated.
-                </div>
             </div>
 
             <button type="submit" class="btn btn-primary">Save</button>

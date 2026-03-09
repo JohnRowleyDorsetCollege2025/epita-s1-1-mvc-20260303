@@ -1,0 +1,89 @@
+@model CustomerInvoiceDetailViewModel
+
+@{
+    ViewData["Title"] = $"Invoice #{Model.InvoiceId} — {Model.CustomerName}";
+}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-action="Index">Customers</a></li>
+        <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.CustomerId">@Model.CustomerName</a></li>
+        <li class="breadcrumb-item"><a asp-action="Invoices" asp-route-id="@Model.CustomerId">Invoices</a></li>
+        <li class="breadcrumb-item active">Invoice #@Model.InvoiceId</li>
+    </ol>
+</nav>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Customer</div>
+            <div class="card-body">
+                <dl class="mb-0">
+                    <dt>Name</dt>
+                    <dd>
+                        <a asp-action="Details" asp-route-id="@Model.CustomerId">@Model.CustomerName</a>
+                    </dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a asp-action="Invoices" asp-route-id="@Model.CustomerId" class="btn btn-sm btn-outline-secondary">
+                    All invoices for this customer
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Invoice</div>
+            <div class="card-body">
+                <dl class="mb-0">
+                    <dt>Invoice #</dt>
+                    <dd>@Model.InvoiceId</dd>
+
+                    <dt>Date</dt>
+                    <dd>@Model.InvoiceDate.ToString("dd MMM yyyy")</dd>
+
+                    <dt>Lines</dt>
+                    <dd>@Model.Lines.Count</dd>
+
+                    <dt>Total</dt>
+                    <dd class="fw-bold">£@Model.Total.ToString("N2")</dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a asp-controller="Invoices" asp-action="Edit" asp-route-id="@Model.InvoiceId"
+                   class="btn btn-sm btn-outline-primary">Edit Invoice</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h5 class="mb-2">Invoice Lines</h5>
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Product</th>
+            <th class="text-center" style="width:110px">Qty</th>
+            <th class="text-end" style="width:140px">Unit Price</th>
+            <th class="text-end" style="width:130px">Line Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var line in Model.Lines)
+        {
+            <tr>
+                <td>@line.ProductName</td>
+                <td class="text-center">@line.Quantity</td>
+                <td class="text-end">£@line.UnitPrice.ToString("N2")</td>
+                <td class="text-end">£@line.LineTotal.ToString("N2")</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr class="table-light">
+            <td colspan="3" class="text-end fw-semibold">Total:</td>
+            <td class="text-end fw-bold">£@Model.Total.ToString("N2")</td>
+        </tr>
+    </tfoot>
+</table>
